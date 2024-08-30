@@ -16,15 +16,18 @@
     <div id="results"></div>
     <div id="movieDetails" class="movie-details"></div>
     <script>
-        let timeoutId;
+        let lastCallTime = 0;
         async function fetchMovies(query) {
             const response = await fetch(`https://www.omdbapi.com/?s=${query}&apikey=4d04ee0a`);
             const data = await response.json();
             displayMovieTitles(data.Search);
         }
-        function debounceSearch(func, delay) {
-            clearTimeout(timeoutId);
-            timeoutId = setTimeout(func, delay);
+        function throttleSearch(func, limit) {
+            const now = new Date().getTime();
+            if (now - lastCallTime >= limit) {
+                lastCallTime = now;
+                func();
+            }
         }
         function displayMovieTitles(movies) {
             const resultsDiv = document.getElementById('results');
@@ -53,7 +56,7 @@
         document.getElementById('searchInput').addEventListener('input', () => {
             const query = document.getElementById('searchInput').value;
             if (query.trim()) {
-                debounceSearch(() => fetchMovies(query), 500);
+                throttleSearch(() => fetchMovies(query), 1000);
             }
         });
     </script>
